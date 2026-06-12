@@ -1,46 +1,67 @@
-# Desglose del sistema lógica (partes mas pequeñas)
+# Notas:
 
-Haber todos inician por el login evidentemente
-en el login una vez se autentica se consulta su rol y permisos
-etc. entonces ahora si viene y se redirige dependiendo rol:
-hay varios roles al comienzo solo superadmin, admin, docente y coordinador (pero se puede crear mas rolesy asignarles permisos aunque la funcionalidad es beta), en principio todos tienen asignado ciertos permisos
-asociados a su rol ej: coordinador solo ve planificaciones pero tiene aceso para ver todas, en cambio docente solo ve siysolosi tiene asignado asignaturas ahi pueed crear planificaicones para cada una de esas asignaturas pero para las demas no etc.
+# APP
 
-Viendolo asi quiza es mejor descirbir basado en funcionalidades mas que describirlo basado en cad arol pues las funcionalidades se comparten en algunos casos por ejemplo que se yo el admin gesitona usuarios y el superadmin tambien etc. OK entonces las funcionalidades incluyen:
+-Distribucion de responsabilidades
+-Estructura mínima:
 
-1. asignar_docentes
-   Asignar docentes a asignaturas del período
-2. configurar_asignaturas_periodo
-   Asociar asignaturas al período activo
-3. configurar_componentes_periodo
-   Definir horas por componente en asignatura_periodo
-4. configurar_periodos
-   Crear y activar períodos académicos
-5. configurar_regla_sincronico
-   Configurar porcentaje sincronico/asincronico (Regla X/Y)
-6. crear_cursos
-   Permite crear cursos en Moodle
-7. gestionar_configuracion_mfa
-   configuracion mfa
-8. gestionar_configuracion_sistema
-   gestionar configuracion contrasenas
-9. gestionar_limpieza
-   Permite gestionar la limpieza de cursos y logs del sistema
-10. gestionar_planificaciones
-    Crear y editar planificaciones
-11. gestionar_reglas_actividades
-    Configurar reglas de actividades
-12. gestionar_roles
-    Asignar y cambiar roles
-13. gestionar_usuarios
-    Crear, editar y eliminar usuarios
-14. gggg
-    ggg es un permiso de prueba
-15. habilitar_planificacion
-    Desbloquear planificación docente para el período
-16. index.php
-    Acceso a p├ígina principal
-17. ver_logs
-    Visualizar registros y auditoría del sistema
-18. ver_reportes
-    Acceder a reportes acad??micos
+backend/
+|
+├── .env
+├── .gitignore
+├── scripts/ ->bd
+├── **src**/ -> codigo fuente
+│ ├── config/
+│ │ └── db.js # Conexión a la base de datos (ej. pg, mysql2)
+│ ├── **controllers**/ # llama repositories y responde cliente http
+│ │ └── authController.js
+│ ├── **middlewares** / # autenticación, autorización,logs,error-managment
+│ │ ├── authMiddleware.js
+│ │ └── checkPermiso.js
+│ ├── **repositories**/ -> QUERIES AQUI
+│ │ └── usuarioRepository.js
+│ ├── **routes**/ # Endpoints de la API
+│ │ └── v1/
+│ │ ├── auth.js
+│ │ └── planificaciones.js (ejemplo)
+│ ├── **services**/ # logica sin HTTP
+│ │ └── authService.js
+│ ├── **models**/ # Definición de entidades o esquemas de datos
+│ └── app.js
+└── server.js
+|
+frontend/
+|
+├── .env
+├── .gitignore
+├── public/ -> imagenes
+├── **src**/ -> codigo fuente
+│ ├── **api**/ # Peticiones fetch/axios (authAPI.js, etc.)
+│ │ └── authAPI.js
+│ │ └── planificacionesAPI.js
+│ ├── **assets**/ -> imagenes proyecto etc.
+│ ├── **components**/ # Componentes globales reutilizables (Botones, Modales, Navbar)
+│ │ └── renderPlanificaciones.js
+│ ├── main.js # Punto de entrada único
+└── index.html
+README.md
+
+-Middlewares
+-RBAC, LDAP un usuario puede tener varios roles (viceversa) y tambien hay excepcione sdondeun mismo usuario puede tener permisos directamente (usuario -> tiene ->roles ->tiene->permisos->usuario {6 tablas})
+
+# BOTH
+
+Hacer una consulta a la base de datos en cada petición HTTP puede ralentizar tu servidor si tienes miles de usuarios concurrentes, por ello consultar **1 sola vez** y guardar en req.session.permisos o dentro del payload JWT así valida en memoria server node.js sin tocar BD cada segundo.
+
+# BD
+
+-Normalizar min(3FN)
+-Tablas auditoria created_at, updated_at.
+
+- **Stored Procedures** (SP) log _automatic, triggers actualiza permisos admin automaticamente triggers. importante tener SP (\*\*\_un admin puede entrar por consola y js no ejecutaría insert en logs peeero los SP de la BD si, en cambio usar insert de logs para cuando son cosa que la bd no detecta como errores frontend,intento de acceso no autorizado etc._\*\*)
+
+# Tests
+
+# hacer crud desde cero paso a paso linea a linea no bloques
+
+# build -> github -> triggers -> unit testing -> Cloud deploy ->Ci/CD -> all automated (qa auto) -> branch ORM

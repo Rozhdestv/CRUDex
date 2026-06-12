@@ -16,23 +16,21 @@ export const login = async (username, password) => {
   return res.json();
 };
 
-export const logout = async () =>{
-    const res = await fetch(`${API_AUTH}/logout`,{
-        method: "POST",
-        credentials: "include",
-    });
-    if(!res.ok) throw new Error("Error al cerrar sesión");
-return res.json();
+export const logout = async () => {
+  const res = await fetch(`${API_AUTH}/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Error al cerrar sesión");
+  return res.json();
 };
 
-export const getCurrentUser = async =>{
-    const res = await fetch(`${API_AUTH}/me`,{
-        method: "GET",
-        credentials: "include",
-    });
-    if(!res.ok) return null;
-    const data = await res.json();
-    return data.user;
+export const getCurrentUser = async () => {
+  const res = await fetch(`${API_AUTH}/me`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.user;
 };
-
-

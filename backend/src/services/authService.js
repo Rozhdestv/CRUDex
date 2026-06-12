@@ -1,14 +1,14 @@
-// src/services/authService.js
 "use strict";
 const bcrypt = require("bcrypt");
 const usuarioRepository = require("../repositories/usuarioRepository");
 
-const login = async (username, password) => {
+async function login(username, password) {
   const user = await usuarioRepository.findByUsername(username);
-  if (!user) return { success: false, error: "Usuario no encontrado" };
-  if (!user.activo) return { success: false, error: "Usuario inactivo" };
+  console.log("Usuario encontrado:", user); // 👈 Agrega esto
+  if (!user) return { success: false, error: "Credenciales inválidas" };
+  if (!user.activo) return { success: false, error: "Usuario deshabilitado" };
   const valid = await bcrypt.compare(password, user.password_hash);
-  if (!valid) return { success: false, error: "Contraseña incorrecta" };
+  if (!valid) return { success: false, error: "Credenciales inválidas" };
   return {
     success: true,
     user: {
@@ -18,8 +18,6 @@ const login = async (username, password) => {
       nombre: user.nombre,
     },
   };
-};
+}
 
-module.exports = {
-  login,
-};
+module.exports = { login };

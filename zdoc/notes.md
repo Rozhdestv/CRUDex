@@ -60,3 +60,8 @@ npm install --save-dev vitest happy-dom (en front)
 # sesiones
 
 npm install express-session connect-pg-simple bcrypt
+
+# PARA TESTING
+
+npm install --save-dev jest supertest (backend)
+npm install --save-dev cross-env (windows)

@@ -52,8 +52,8 @@ const limiter = rateLimit({
   max: 100, // Limite de 100 solicitudes por IP
   message: "Demasiadas peticiones intente mas tarde",
 });
-app.use("/planificaciones", limiter);
-
+app.use(limiter);
+// app.set('trust proxy', 1); // si estás detrás de un proxy
 app.use(
   cors({
     origin:
@@ -88,19 +88,19 @@ app.use(
   }),
 );
 // ---------- CONFIGURACIÓN DE SESIÓN (NUEVO) ----------
+const setAuditUser = require("./src/middlewares/setAuditUser");
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../frontend/public")));
-app.use("/auth/v1", require("./routes/v1/auth"));
-app.use("/planificaciones/v1", require("./src/routes/v1/planificaciones"));
+app.use("/auth/v1", setAuditUser, require("./src/routes/v1/auth"));
+app.use(
+  "/planificaciones/v1",
+  setAuditUser,
+  require("./src/routes/v1/planificaciones"),
+);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 // ✅ Exporta la app para pruebas
 module.exports = app;
-
-// ✅ Solo escucha si no estamos en pruebas
-if (process.env.NODE_ENV !== "test") {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`escuchando ${PORT}`));
-}

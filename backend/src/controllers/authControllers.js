@@ -1,7 +1,7 @@
 // src/controllers/authControllers.js
 "use strict";
 const authService = require("../services/authService");
-const pool = require("../config/db");
+const auditService = require("../services/auditService");
 const usuarioRepository = require("../repositories/usuarioRepository");
 
 const login = async (req, res) => {
@@ -14,51 +14,47 @@ const login = async (req, res) => {
 
   const result = await authService.login(username, password);
   if (!result.success) {
-    await pool.query(
-      `INSERT INTO logs_auditoria (usuario_id,accion, ip, user_agent, detalle) VALUES (NULL,'login fallido', $1, $2, $3)`,
-      [
-        ip,
-        userAgent,
-        JSON.stringify({ username: username, error: result.error }),
-      ],
-    );
+    await auditService.registrarLog(null, "login_fallido", ip, userAgent, {
+      username,
+      error: result.error,
+    });
     return res.status(401).json({ success: false, error: result.error });
   }
+
   req.session.user = result.user;
   req.session.touch();
-
+  console.log("📌 [authController] result.user completo:", result.user);
+  console.log("📌 [authController] result.user.id:", result.user.id);
   await usuarioRepository.updateLastLogin(result.user.id);
-  await pool.query(
-    `INSERT INTO logs_auditoria (usuario_id,accion, ip, user_agent, detalle) VALUES ($1,'login exitoso', $2, $3, $4)`,
-    [result.user.id, ip, userAgent, JSON.stringify({ username: username })],
-  );
+
   res.json({ success: true, user: result.user });
 };
 
-const logout = async (req, res) => {
+const logout = (req, res) => {
   if (!req.session.user) {
     return res.status(400).json({ success: false, error: "No autenticado" });
   }
   const userId = req.session.user.id;
-  req.session.destroy((err) => {
+
+  req.session.destroy(async (err) => {
     if (err) {
       console.error(err);
-      return res.status(500).json({ success: false, error: "Error al cerrar sesión" });
+      return res
+        .status(500)
+        .json({ success: false, error: "Error al cerrar sesión" });
     }
-  res.clearCookie(process.env.SESSION_NAME || "connect.sid");
-  await pool.query(
-    `INSERT INTO logs_auditoria (usuario_id,accion) VALUES ($1,'logout')`,
-    [userId],
-  ).catch(console.error);
-  res.json({ success: true });
+    res.clearCookie(process.env.SESSION_NAME || "connect.sid");
+
+    await auditService.registrarLog(userId, "logout").catch(console.error);
+    res.json({ success: true });
   });
 };
 
 const getCurrentUser = (req, res) => {
-    if(!req.session.user){
-        return res.status(401).json({success:false,error: "No autenticado"});
-    }
-    res.json({success:true,user:req.session.user});
+  if (!req.session.user) {
+    return res.status(401).json({ success: false, error: "No autenticado" });
+  }
+  res.json({ success: true, user: req.session.user });
 };
 
 module.exports = {

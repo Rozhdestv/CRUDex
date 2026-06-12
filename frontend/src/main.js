@@ -1,4 +1,3 @@
-/* frontend/src/main.js */
 "use strict";
 import { login, logout, getCurrentUser } from "./api/authAPI";
 import {
@@ -7,17 +6,13 @@ import {
   eliminarPlanificacion,
   actualizarPlanificacion,
 } from "./api/planificacionesAPI";
-
 import { renderPlanificaciones } from "./components/renderPlanificaciones";
-
-let currentUser = null;
 
 const loginSection = document.getElementById("loginSection");
 const mainApp = document.getElementById("mainApp");
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const loginError = document.getElementById("loginError");
-
 const form = document.getElementById("formPlan");
 const modal = document.getElementById("modalEditar");
 const formEditar = document.getElementById("formEditar");
@@ -25,6 +20,8 @@ const editId = document.getElementById("editId");
 const editTema = document.getElementById("editTema");
 const editDesc = document.getElementById("editDesc");
 const btnCerrar = document.getElementById("btnCerrar");
+
+let currentUser = null;
 
 async function checkSession() {
   const user = await getCurrentUser();
@@ -47,6 +44,7 @@ async function handleLogin() {
     currentUser = res.user;
     loginSection.style.display = "none";
     mainApp.style.display = "block";
+    window.location.reload();
     cargarPlanificaciones();
   } catch (err) {
     loginError.textContent = err.message;
@@ -64,18 +62,12 @@ async function handleLogout() {
 }
 
 const cargarPlanificaciones = async () => {
-  const response = await obtenerPñanificaciones();
-  const data = Array.isArray(response.data) ? response.data : [];
-  renderPlanificaciones(data, editar, eliminar);
-};
-
-const cargarPlanificaciones = async () => {
   const response = await obtenerPlanificaciones();
   const data = Array.isArray(response.data) ? response.data : [];
   renderPlanificaciones(data, editar, eliminar);
 };
 
-const editar = async (id, temaActual, descActual) => {
+const editar = (id, temaActual, descActual) => {
   editId.value = id;
   editTema.value = temaActual;
   editDesc.value = descActual;
@@ -96,7 +88,7 @@ formEditar.addEventListener("submit", async (e) => {
   const id = editId.value;
   const tema = editTema.value;
   const descripcion = editDesc.value;
-  if (!tema || !descripcion) return alert("Tema y descripción son requeridos");
+  if (!tema || !descripcion) return alert("Campos requeridos");
   try {
     await actualizarPlanificacion(id, tema, descripcion);
     modal.close();
@@ -116,7 +108,7 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const tema = document.getElementById("tema").value;
   const descripcion = document.getElementById("descripcion").value;
-  if (!tema || !descripcion) return alert("Tema y descripción son requeridos");
+  if (!tema || !descripcion) return alert("Campos requeridos");
   try {
     await crearPlanificacion(tema, descripcion);
     form.reset();

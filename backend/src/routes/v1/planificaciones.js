@@ -22,7 +22,7 @@ router.delete(
 );
 router.put(
   "/:id",
-  checkPermiso("planificacion", "actualizar"),
+  checkPermiso("planificacion", "editar"),
   actualizarPlanificacion,
 );
 

@@ -1,0 +1,1 @@
+Escaneo limpio sin advertencias.

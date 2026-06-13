@@ -48,23 +48,26 @@ async function listarPlanificaciones(page = 1, limit = 10) {
 
 async function eliminarPlanificacion(id) {
   if (isNaN(id)) throw new Error("ID inválido");
-  await planificacionRepository.eliminarPorId(id);
+  const result = await planificacionRepository.eliminarPorId(id);
+  return result.rowCount > 0; // true si eliminó algo
 }
 
 async function actualizarPlanificacion(id, tema, descripcion) {
   if (isNaN(id)) throw new Error("ID inválido");
-
   const temaSanitizado = xss(tema.trim());
   const descSanitizada = xss(descripcion.trim());
-
   if (temaSanitizado.length < 1 || temaSanitizado.length > 25) {
     throw new Error("Tema requiere 1-25 caracteres");
   }
   if (descSanitizada.length < 1 || descSanitizada.length > 25) {
     throw new Error("Descripción requiere 1-25 caracteres");
   }
-
-  await planificacionRepository.actualizar(id, temaSanitizado, descSanitizada);
+  const result = await planificacionRepository.actualizar(
+    id,
+    temaSanitizado,
+    descSanitizada,
+  );
+  if (result.rowCount === 0) throw new Error("Planificación no encontrada");
 }
 
 module.exports = {

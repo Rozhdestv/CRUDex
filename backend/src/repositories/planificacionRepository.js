@@ -23,14 +23,16 @@ async function obtenerTotal() {
 }
 
 async function eliminarPorId(id) {
-  await pool.query("DELETE FROM tema WHERE id = $1", [id]);
+  const result = await pool.query("DELETE FROM tema WHERE id = $1", [id]);
+  return result; // contiene rowCount
 }
 
 async function actualizar(id, tema, descripcion) {
-  await pool.query(
+  const result = await pool.query(
     "UPDATE tema SET tema = $1, descripcion = $2 WHERE id = $3",
     [tema, descripcion, id],
   );
+  return result; // contiene rowCount
 }
 
 module.exports = {

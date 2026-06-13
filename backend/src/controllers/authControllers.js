@@ -18,7 +18,10 @@ const login = async (req, res) => {
       username,
       error: result.error,
     });
-    return res.status(401).json({ success: false, error: result.error });
+    console.error("Error al iniciar sesión:", result.error); // Log interno
+    return res
+      .status(401)
+      .json({ success: false, error: "Error de autenticación" });
   }
 
   req.session.user = result.user;

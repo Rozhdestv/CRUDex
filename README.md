@@ -1,37 +1,105 @@
-# CRUDex CRUD simple en Express + Vite
+# CRUDex - Backend + Frontend
 
-CRUDex is a CRUD web application made in Express and Vite Vanilla.
+Aplicación para CRUD con autenticación RBAC.
 
-## Installation
+## Requisitos
 
-Clone the repo.
+- Node.js 20+
+- PostgreSQL 14+
+- npm o yarn
+
+## Estructura del Proyecto
+
+```text
+APP2/
+├── backend/           # API Express + PostgreSQL
+├── frontend/          # Vite vanilla JS
+└── docker-compose.yml
+```
+
+## Instalación y Ejecución (Desarrollo)
+
+### 1. Clonar repositorio
 
 ```bash
-npm install requirements
+git clone
+cd APP2
 ```
 
-## Usage
+### 2. Configurar variables de entorno
 
-```python
-import foobar
+Crea un archivo `.env` en la carpeta `backend/` (puedes usar `.env.example` como base):
 
-# returns 'words'
-foobar.pluralize('word')
+```env
+# backend/.env
+PORT=3000
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=plan2courseex
+DB_USER=postgres
+DB_PASSWORD=tu_password
+SESSION_SECRET=un_secreto_muy_largo
+SESSION_NAME=connect.sid
 
-# returns 'geese'
-foobar.pluralize('goose')
-
-# returns 'phenomenon'
-foobar.singularize('phenomena')
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@yahoo.com
+ADMIN_PASSWORD=contraseña
 ```
 
-## Contributing
+### 3. Base de datos
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
+Ejecuta el script SQL `database/schema.sql` en tu gestor de PostgreSQL para crear las tablas (incluye autenticación, permisos y logs). Luego, ejecuta el siguiente comando para crear el usuario administrador inicial:
 
-Please make sure to update tests as appropriate.
+```bash
+cd backend
+node scripts/createAdmin.js
+```
 
-## License
+### 4. Backend
 
-[MIT](https://choosealicense.com/licenses/mit/)
+```bash
+cd backend
+npm install
+npm run dev   # Servidor corriendo en http://localhost:3000
+```
+
+### 5. Frontend (Desarrollo)
+
+```bash
+cd frontend
+npm install
+npm run dev   # Cliente corriendo en http://localhost:5173
+```
+
+---
+
+## Testing
+
+Para ejecutar las pruebas unitarias (con Mocks) y de integración en el backend, utiliza los siguientes comandos dentro de la carpeta `backend/`:
+
+```bash
+cd backend
+npm test               # Ejecuta los tests una vez
+npm run test:watch     # Modo interactivo para desarrollo
+npm run test:coverage  # Genera el reporte de cobertura de código
+```
+
+---
+
+## Construcción para Producción
+
+### Backend
+
+```bash
+cd backend
+npm ci --only=production
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm run build   # Genera la carpeta dist/ lista para desplegar
+```
+
+> **Nota:** El backend sirve automáticamente los archivos estáticos de la carpeta `frontend/dist` si tienes configurado `express.static` en tu servidor Express.
